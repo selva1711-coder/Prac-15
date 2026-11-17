@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Sphere - Student Task Manager</title>
+
+    <style>
+        /* Common page styling */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: lavender;
+            color: #222;
+            margin: 0;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: white;
+            border: 2px solid purple;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: purple;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            color: purple;
+            font-size: 22px;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .theme-button {
+            display: block;
+            margin: 10px auto 20px;
+            background-color: purple;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #aaa;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: purple;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 3px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .task {
+            background-color: #f0e6ff;
+            border: 1px solid #c5a3ff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .task h3 {
+            color: purple;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .complete-btn {
+            background-color: seagreen;
+        }
+
+        .delete-btn {
+            background-color: crimson;
+        }
+
+        #message {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: gray;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: #171522;
+            color: white;
+        }
+
+        body.dark-mode .container {
+            background-color: #29243b;
+            border-color: #a78bfa;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode .task h3 {
+            color: #d6bcfa;
+        }
+
+        body.dark-mode .task {
+            background-color: #403653;
+            border-color: #9b7bd3;
+        }
+
+        body.dark-mode input,
+        body.dark-mode textarea,
+        body.dark-mode select {
+            background-color: #393348;
+            color: white;
+            border-color: #a78bfa;
+        }
+
+        body.dark-mode input::placeholder,
+        body.dark-mode textarea::placeholder {
+            color: #ddd;
+        }
+
+        body.dark-mode footer {
+            color: #ccc;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Task Sphere</h1>
+
+        <p style="text-align:center;">
+            Organize Your Tasks. Manage Your Time.
+        </p>
+
+        <!-- Dark Mode Button -->
+        <button class="theme-button" onclick="toggleTheme()"
+                id="themeButton">
+            Enable Dark Mode
+        </button>
+
+        <hr>
+
+        <h2>Student Task Manager</h2>
+
+        <form id="taskForm">
+
+            <label for="taskName">Task Name</label>
+            <input type="text" id="taskName"
+                   placeholder="Enter your task name" required>
+
+            <label for="description">Task Description</label>
+            <textarea id="description"
+                      placeholder="Enter task description"
+                      required></textarea>
+
+            <label for="dueDate">Due Date</label>
+            <input type="date" id="dueDate" required>
+
+            <label for="priority">Select Priority</label>
+            <select id="priority" required>
+                <option value="">Choose Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+
+            <button type="submit">Add Task</button>
+
+        </form>
+
+        <p id="message" aria-live="polite"></p>
+
+        <hr>
+
+        <h2>My Tasks</h2>
+
+        <div id="taskList">
+            <p id="emptyMessage">No tasks added yet!</p>
+        </div>
+
+        <h2 id="taskCount">Total Tasks: 0</h2>
+
+        <footer>
+            <p>Task Sphere - Student Task Management System</p>
+        </footer>
+
+    </div>
+
+    <script>
+
+        // 1. Load saved theme when webpage opens
+        function loadTheme() {
+
+            let savedTheme = localStorage.getItem("taskSphereTheme");
+
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-mode");
+            }
+
+            updateThemeButton();
+        }
+
+        // 2. Switch between Light Mode and Dark Mode
+        function toggleTheme() {
+
+            document.body.classList.toggle("dark-mode");
+
+            let currentTheme;
+
+            if (document.body.classList.contains("dark-mode")) {
+                currentTheme = "dark";
+            } else {
+                currentTheme = "light";
+            }
+
+            localStorage.setItem("taskSphereTheme", currentTheme);
+
+            updateThemeButton();
+        }
+
+        // 3. Update theme button text
+        function updateThemeButton() {
+
+            let button = document.getElementById("themeButton");
+
+            if (document.body.classList.contains("dark-mode")) {
+                button.innerText = "Enable Light Mode";
+            } else {
+                button.innerText = "Enable Dark Mode";
+            }
+        }
+
+        // 4. Add a new task
+        let totalTasks = 0;
+
+        document.getElementById("taskForm").onsubmit = function(event) {
+
+            event.preventDefault();
+
+            let name = document.getElementById("taskName").value.trim();
+            let description = document.getElementById("description").value.trim();
+            let date = document.getElementById("dueDate").value;
+            let priority = document.getElementById("priority").value;
+
+            if (name === "" || description === "" ||
+                date === "" || priority === "") {
+
+                document.getElementById("message").innerText =
+                    "Please fill all the fields!";
+                return;
+            }
+
+            // Remove empty message
+            let emptyMessage = document.getElementById("emptyMessage");
+
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            // Create task container
+            let task = document.createElement("div");
+            task.className = "task";
+
+            // Create task heading
+            let heading = document.createElement("h3");
+            heading.textContent = name;
+
+            // Create task description
+            let details = document.createElement("p");
+            details.textContent = "Description: " + description;
+
+            // Create due date
+            let due = document.createElement("p");
+            due.textContent = "Due Date: " + date;
+
+            // Create priority
+            let level = document.createElement("p");
+            level.textContent = "Priority: " + priority;
+
+            // Complete button
+            let completeButton = document.createElement("button");
+            completeButton.innerText = "Complete";
+            completeButton.className = "complete-btn";
+
+            completeButton.onclick = function() {
+
+                task.classList.toggle("completed");
+
+                if (task.classList.contains("completed")) {
+                    completeButton.innerText = "Completed";
+                } else {
+                    completeButton.innerText = "Complete";
+                }
+            };
+
+            // Delete button
+            let deleteButton = document.createElement("button");
+            deleteButton.innerText = "Delete";
+            deleteButton.className = "delete-btn";
+
+            deleteButton.onclick = function() {
+
+                task.remove();
+
+                totalTasks--;
+                updateTaskCount();
+
+                if (totalTasks === 0) {
+                    let empty = document.createElement("p");
+                    empty.id = "emptyMessage";
+                    empty.textContent = "No tasks added yet!";
+                    document.getElementById("taskList").appendChild(empty);
+                }
+            };
+
+            // Add elements to task
+            task.appendChild(heading);
+            task.appendChild(details);
+            task.appendChild(due);
+            task.appendChild(level);
+            task.appendChild(completeButton);
+            task.appendChild(deleteButton);
+
+            // Display task
+            document.getElementById("taskList").appendChild(task);
+
+            totalTasks++;
+            updateTaskCount();
+
+            document.getElementById("message").innerText =
+                "Task added successfully!";
+
+            // Clear form
+            document.getElementById("taskForm").reset();
+        };
+
+        // 5. Update total task count
+        function updateTaskCount() {
+
+            document.getElementById("taskCount").innerText =
+                "Total Tasks: " + totalTasks;
+        }
+
+        // Run when webpage loads
+        loadTheme();
+
+    </script>
+
+</body>
+</html>
